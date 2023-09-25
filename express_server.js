@@ -29,8 +29,16 @@ app.get("/urls", (req, res) => {
 });
 
 app.post("/urls", (req, res) => {
-  console.log(req.body); // Log the POST request body to the console
-  res.send("Ok"); // Respond with 'Ok' (we will replace this)
+  const longURL = req.body.longURL; // Get the longURL from the form data
+  const shortURL = generateRandomString(); // Generate a random short URL
+
+  // Save the id-longURL pair to urlDatabase
+  urlDatabase[shortURL] = longURL;
+
+  console.log(`Long URL: ${longURL}, Short URL: ${shortURL}`);
+
+  // Respond with a redirect to the new short URL page
+  res.redirect(`/urls/${shortURL}`);
 });
 
 app.get("/urls/new", (req, res) => {
@@ -41,7 +49,6 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id]};
   res.render("urls_show", templateVars);
 });
-
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
