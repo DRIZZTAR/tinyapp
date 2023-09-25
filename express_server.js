@@ -46,7 +46,7 @@ app.get("/urls/new", (req, res) => {
 });
 
 app.get("/urls/:id", (req, res) => {
-  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id]};
+  const templateVars = { id: req.params.id, longURL: urlDatabase[req.params.id] };
   res.render("urls_show", templateVars);
 });
 
@@ -72,11 +72,21 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect("/urls");
 });
 
+// Add a new route to handle URL updates
+app.post("/urls/:id/update", (req, res) => {
+  const shortURL = req.params.id; // Extract the shortURL from the request parameters
+  const newLongURL = req.body.newLongURL; // Get the updated longURL from the form data
+
+  // Update the long URL in the urlDatabase
+  urlDatabase[shortURL] = newLongURL;
+
+  // Redirect to the URL show page for the updated URL
+  res.redirect(`/urls/${shortURL}`);
+});
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
 
 function generateRandomString() {
   let result = '';
