@@ -50,6 +50,18 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+app.get("/u/:id", (req, res) => {
+  const shortURL = req.params.id; // Extract the shortURL from the request parameters
+  const longURL = urlDatabase[shortURL]; // Look up the longURL in the urlDatabase
+
+  // Check if the longURL exists in the database
+  if (longURL) {
+    res.redirect(longURL); // Redirect to the longURL
+  } else {
+    res.status(404).send("URL not found"); // Handle the case where the shortURL doesn't exist
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
