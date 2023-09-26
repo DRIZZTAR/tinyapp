@@ -96,6 +96,7 @@ app.post("/urls/:id/update", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+// Login
 app.post("/login", (req, res) => {
   const username = req.body.username; // Get the username from the request body
 
@@ -103,6 +104,15 @@ app.post("/login", (req, res) => {
   res.cookie("username", username);
 
   // Redirect the browser back to the /urls page
+  res.redirect("/urls");
+});
+
+// logout endpoint
+app.post("/logout", (req, res) => {
+  // Clear the username cookie
+  res.clearCookie("username");
+
+  // Redirect the user back to the /urls page (for now)
   res.redirect("/urls");
 });
 
