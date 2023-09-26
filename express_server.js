@@ -84,6 +84,17 @@ app.post("/urls/:id/update", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+app.post("/login", (req, res) => {
+  const username = req.body.username; // Get the username from the request body
+
+  // Set a cookie named "username" with the value submitted in the request body
+  res.cookie("username", username);
+
+  // Redirect the browser back to the /urls page
+  res.redirect("/urls");
+});
+
+
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
