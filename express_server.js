@@ -13,6 +13,8 @@ const urlDatabase = {
 
 app.use(express.urlencoded({ extended: true }));
 
+const users = {};
+
 app.get("/", (req, res) => {
   res.send("Hello!");
 });
@@ -28,7 +30,7 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
-    username: req.cookies["username"] // Pass the username
+    user: users[req.cookies["user_id"]] // Pass the user object
   };
   res.render("urls_index", templateVars);
 });
@@ -48,7 +50,7 @@ app.post("/urls", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
   const templateVars = {
-    username: req.cookies["username"] // Pass the username
+    user: users[req.cookies["user_id"]] // Pass the user object
   };
   res.render("urls_new", templateVars);
 });
@@ -57,7 +59,7 @@ app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id,
     longURL: urlDatabase[req.params.id],
-    username: req.cookies["username"] // Pass the username
+    user: users[req.cookies["user_id"]] // Pass the user object
   };
   res.render("urls_show", templateVars);
 });
@@ -100,17 +102,27 @@ app.post("/urls/:id/update", (req, res) => {
 app.post("/login", (req, res) => {
   const username = req.body.username; // Get the username from the request body
 
-  // Set a cookie named "username" with the value submitted in the request body
-  res.cookie("username", username);
+  // Set a cookie named "user_id" with the value submitted in the request body
+  const userId = generateRandomString();
+  res.cookie("user_id", userId);
+
+  // Add the user object to the users object
+  users[userId] = {
+    id: userId,
+    email: username,
+    password: "", // You can add password logic here
+  };
 
   // Redirect the browser back to the /urls page
   res.redirect("/urls");
 });
 
-// logout endpoint
+// Logout endpoint
 app.post("/logout", (req, res) => {
-  // Clear the username cookie
-  res.clearCookie("username");
+  // Clear the user_id cookie
+  const userId = req.cookies["user_id"];
+  delete users[userId];
+  res.clearCookie("user_id");
 
   // Redirect the user back to the /urls page (for now)
   res.redirect("/urls");
@@ -119,6 +131,38 @@ app.post("/logout", (req, res) => {
 // GET /register endpoint
 app.get("/register", (req, res) => {
   res.render("registration");
+});
+
+app.post("/register", (req, res) => {
+  const userId = generateRandomString(); // Generate a random user ID
+  const { email, password } = req.body; // Get user data from the form
+
+  // Check if the email or password is empty
+  if (!email || !password) {
+    res.status(400).send("Email and password cannot be empty.");
+    return;
+  }
+
+  // Check if the email is already in use
+  for (const existingUserId in users) {
+    if (users[existingUserId].email === email) {
+      res.status(400).send("Email is already registered.");
+      return;
+    }
+  }
+
+  // Create a new user object and add it to the users object
+  users[userId] = {
+    id: userId,
+    email: email,
+    password: password,
+  };
+
+  // Set a user_id cookie containing the user's ID
+  res.cookie("user_id", userId);
+
+  // Redirect the user to the /urls page
+  res.redirect("/urls");
 });
 
 app.listen(PORT, () => {
