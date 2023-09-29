@@ -155,13 +155,13 @@ const generateRandomString = function() {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
   return result;
-}
+};
 
-function getUserByEmail(email, users) {
+const getUserByEmail = function(email, users) {
   for (const userId in users) {
     if (users[userId].email === email) {
       return users[userId];
     }
   }
   return null; // Return null if the email is not found
-}
+};
