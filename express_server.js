@@ -18,7 +18,7 @@ const urlDatabase = {
 const users = {};
 
 // Helper function to generate random strings
-const generateRandomString = function () {
+const generateRandomString = function() {
   let result = "";
   const characters =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -30,7 +30,7 @@ const generateRandomString = function () {
 };
 
 // Helper function to find a user by email
-const getUserByEmail = function (email, users) {
+const getUserByEmail = function(email, users) {
   for (const userId in users) {
     const user = users[userId];
     if (user.email === email) {
@@ -42,7 +42,7 @@ const getUserByEmail = function (email, users) {
 
 // Routes
 
-// Root route
+// Root route - Redirects to login if not logged in, else redirects to /urls
 app.get("/", (req, res) => {
   const userId = req.cookies["user_id"];
   const user = getUserByEmail(userId, users);
@@ -54,12 +54,12 @@ app.get("/", (req, res) => {
   }
 });
 
-// JSON route
+// JSON route - Returns JSON representation of urlDatabase
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-// URL index route
+// URL index route - If user is logged in, render urls_index page. Else, send error message.
 app.get("/urls", (req, res) => {
   const userId = req.cookies["user_id"];
   const user = users[userId];
@@ -76,7 +76,7 @@ app.get("/urls", (req, res) => {
   }
 });
 
-// URL creation route
+// URL creation route - Generate short URL, save it to urlDatabase, and redirect to /urls/:shortURL
 app.post("/urls", (req, res) => {
   const longURL = req.body.longURL; // Get the longURL from the form data
   const shortURL = generateRandomString();
@@ -86,7 +86,7 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-// URL new route
+// URL new route - If user is logged in, render urls_new page. Else, redirect to login.
 app.get("/urls/new", (req, res) => {
   const userId = req.cookies["user_id"];
   const user = users[userId];
@@ -97,6 +97,7 @@ app.get("/urls/new", (req, res) => {
   }
 });
 
+// URL show route - Render urls_show page with short URL, corresponding long URL, and user data
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id,
@@ -106,6 +107,7 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+// URL update route - If user is logged in and owns the URL, update the URL and redirect to /urls. Else, send error message.
 app.post("/urls/:id", (req, res) => {
   const userId = req.cookies["user_id"];
   const user = users[userId];
@@ -124,6 +126,7 @@ app.post("/urls/:id", (req, res) => {
   }
 });
 
+// URL redirect route - If long URL exists, redirect to long URL. Else, send error message.
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id; // Extract the shortURL from the request parameters
   const longURL = urlDatabase[shortURL]; // Look up the longURL in the urlDatabase
@@ -136,6 +139,7 @@ app.get("/u/:id", (req, res) => {
   }
 });
 
+// URL delete route - If user is logged in and owns the URL, delete the URL and redirect to /urls. Else, send error message.
 app.post("/urls/:id/delete", (req, res) => {
   const userId = req.cookies["user_id"];
   const user = users[userId];
@@ -154,14 +158,7 @@ app.post("/urls/:id/delete", (req, res) => {
   }
 });
 
-app.post("/urls/:id/update", (req, res) => {
-  const shortURL = req.params.id;
-  const newLongURL = req.body.newLongURL;
-  urlDatabase[shortURL] = newLongURL; // Update the long URL in the urlDatabase
-  res.redirect(`/urls/${shortURL}`); // Redirect to the URL show page for the updated URL
-});
-
-// Registration form
+// Registration route form - If user is logged in, redirect to /urls. Else, render registration page.
 app.get("/registration", (req, res) => {
   const userId = req.cookies["user_id"];
   const user = users[userId];
@@ -172,9 +169,7 @@ app.get("/registration", (req, res) => {
   }
 });
 
-
-
-// Handle registration form submission
+// Registration post - If email or password are empty or email already exists, send error message. Else, create new user, set cookie, and redirect to /urls.
 app.post("/registration", (req, res) => {
   const userId = generateRandomString();
   const { email, password } = req.body;
@@ -199,7 +194,7 @@ app.post("/registration", (req, res) => {
   res.redirect("/urls");
 });
 
-// Login form
+// Login route - If user is logged in, redirect to /urls. Else, render login page.
 app.get("/login", (req, res) => {
   const userId = req.cookies["user_id"];
   const user = users[userId];
@@ -210,8 +205,7 @@ app.get("/login", (req, res) => {
   }
 });
 
-
-// Handle login form submission
+// Login post - If email or password are invalid, send error message. Else, set cookie and redirect to /urls.
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
   const user = getUserByEmail(email, users);
@@ -225,7 +219,7 @@ app.post("/login", (req, res) => {
   res.redirect("/urls");
 });
 
-// Logout
+// Logout post - Clear cookie and redirect to login.
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
   res.redirect("/login");
