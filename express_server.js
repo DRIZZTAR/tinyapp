@@ -44,8 +44,10 @@ const getUserByEmail = function (email, users) {
 
 // Root route
 app.get("/", (req, res) => {
-  const userId = req.cookies["user_id"]; // Check if the user is logged in by looking for the user_id cookie
-  if (userId) {
+  const userId = req.cookies["user_id"];
+  const user = getUserByEmail(userId, users);
+  // Check if the user is logged in
+  if (user) {
     res.redirect("/urls");
   } else {
     res.redirect("/login");
@@ -61,7 +63,6 @@ app.get("/urls.json", (req, res) => {
 app.get("/urls", (req, res) => {
   const userId = req.cookies["user_id"];
   const user = users[userId];
-
   // Check if the user is logged in
   if (user) {
     const templateVars = {
@@ -87,12 +88,14 @@ app.post("/urls", (req, res) => {
 
 // URL new route
 app.get("/urls/new", (req, res) => {
-  const templateVars = {
-    user: users[req.cookies["user_id"]]
-  };
-  res.render("urls_new", templateVars);
+  const userId = req.cookies["user_id"];
+  const user = getUserByEmail(userId, users);
+  if (user) {
+    res.render("urls_new", { user });
+  } else {
+    res.redirect("/login");
+  }
 });
-
 
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
