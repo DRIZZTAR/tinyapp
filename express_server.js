@@ -44,9 +44,7 @@ const getUserByEmail = function (email, users) {
 
 // Root route
 app.get("/", (req, res) => {
-  // Check if the user is logged in by looking for the user_id cookie
-  const userId = req.cookies["user_id"];
-  
+  const userId = req.cookies["user_id"]; // Check if the user is logged in by looking for the user_id cookie
   if (userId) {
     res.redirect("/urls");
   } else {
@@ -61,11 +59,20 @@ app.get("/urls.json", (req, res) => {
 
 // URL index route
 app.get("/urls", (req, res) => {
-  const templateVars = {
-    urls: urlDatabase,
-    user: users[req.cookies["user_id"]]
-  };
-  res.render("urls_index", templateVars);
+  const userId = req.cookies["user_id"];
+  const user = users[userId];
+
+  // Check if the user is logged in
+  if (user) {
+    const templateVars = {
+      urls: urlDatabase,
+      user: user
+    };
+    res.render("urls_index", templateVars);
+  } else {
+    // If the user is not logged in, send an error message
+    res.send("Error: You must be logged in to view this page.");
+  }
 });
 
 // URL creation route
