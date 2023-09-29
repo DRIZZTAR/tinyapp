@@ -3,12 +3,10 @@ const cookieParser = require("cookie-parser");
 const app = express();
 const PORT = 8080;
 
-// Middleware
 app.set("view engine", "ejs");
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
-// In-memory database for URLs
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
