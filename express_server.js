@@ -89,7 +89,7 @@ app.post("/urls", (req, res) => {
 // URL new route
 app.get("/urls/new", (req, res) => {
   const userId = req.cookies["user_id"];
-  const user = getUserByEmail(userId, users);
+  const user = users[userId];
   if (user) {
     res.render("urls_new", { user });
   } else {
@@ -131,15 +131,17 @@ app.post("/urls/:id/update", (req, res) => {
   res.redirect(`/urls/${shortURL}`); // Redirect to the URL show page for the updated URL
 });
 
-
-
 // Registration form
-app.get("/register", (req, res) => {
-  res.render("registration");
+// Registration form
+app.get("/registration", (req, res) => {
+  const userId = req.cookies["user_id"];
+  const user = getUserByEmail(userId, users);
+  res.render("registration", { user });
 });
 
+
 // Handle registration form submission
-app.post("/register", (req, res) => {
+app.post("/registration", (req, res) => {
   const userId = generateRandomString();
   const { email, password } = req.body;
 
@@ -165,7 +167,9 @@ app.post("/register", (req, res) => {
 
 // Login form
 app.get("/login", (req, res) => {
-  res.render("login");
+  const userId = req.cookies["user_id"];
+  const user = getUserByEmail(userId, users);
+  res.render("login", { user });
 });
 
 // Handle login form submission
