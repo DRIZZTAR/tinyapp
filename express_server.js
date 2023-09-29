@@ -100,6 +100,11 @@ app.post("/login", (req, res) => {
   res.redirect("/urls");
 });
 
+// Display the login form
+app.get("/login", (req, res) => {
+  res.render("login");
+});
+
 // Logout endpoint
 app.post("/logout", (req, res) => {
   const userId = req.cookies["user_id"]; // Clear the user_id cookie
@@ -122,7 +127,7 @@ app.post("/register", (req, res) => {
     return;
   }
 
-  // Use the helper function to check for existing email
+  // Use the helper function to check for an existing email
   const existingUser = getUserByEmail(email, users);
   if (existingUser) {
     res.status(400).send("Email is already registered.");
