@@ -85,18 +85,21 @@ app.post("/urls/:id/update", (req, res) => {
   res.redirect(`/urls/${shortURL}`); // Redirect to the URL show page for the updated URL
 });
 
-// Login
+// POST /login endpoint
 app.post("/login", (req, res) => {
-  const username = req.body.username; // Get the username from the request body
-  const userId = generateRandomString(); // Set a cookie named "user_id" with the value submitted in the request body
-  res.cookie("user_id", userId);
+  const { email, password } = req.body;
 
-  // Add the user object to the users object
-  users[userId] = {
-    id: userId,
-    email: username,
-    password: "",
-  };
+  // Check if the email exists in the users object
+  const user = getUserByEmail(email, users);
+
+  // If the user doesn't exist or the password is incorrect, return a 403 error
+  if (!user || user.password !== password) {
+    res.status(403).send("Invalid email or password");
+    return;
+  }
+
+  // If the email and password are correct, set the user_id cookie and redirect to /urls
+  res.cookie("user_id", user.id);
   res.redirect("/urls");
 });
 
