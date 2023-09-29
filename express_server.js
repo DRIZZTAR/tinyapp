@@ -114,21 +114,19 @@ app.get("/register", (req, res) => {
 });
 
 app.post("/register", (req, res) => {
-  const userId = generateRandomString(); // Generate a random user ID
-  const { email, password } = req.body; // Get user data from the form
+  const userId = generateRandomString();
+  const { email, password } = req.body;
 
-  // Check if the email or password is empty
   if (!email || !password) {
     res.status(400).send("Email and password cannot be empty.");
     return;
   }
 
-  // Check if the email is already in use
-  for (const existingUserId in users) {
-    if (users[existingUserId].email === email) {
-      res.status(400).send("Email is already registered.");
-      return;
-    }
+  // Use the helper function to check for existing email
+  const existingUser = getUserByEmail(email, users);
+  if (existingUser) {
+    res.status(400).send("Email is already registered.");
+    return;
   }
 
   // Create a new user object and add it to the users object
@@ -157,4 +155,13 @@ const generateRandomString = function() {
     result += characters.charAt(Math.floor(Math.random() * charactersLength));
   }
   return result;
+}
+
+function getUserByEmail(email, users) {
+  for (const userId in users) {
+    if (users[userId].email === email) {
+      return users[userId];
+    }
+  }
+  return null; // Return null if the email is not found
 }
