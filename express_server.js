@@ -106,6 +106,24 @@ app.get("/urls/:id", (req, res) => {
   res.render("urls_show", templateVars);
 });
 
+app.post("/urls/:id", (req, res) => {
+  const userId = req.cookies["user_id"];
+  const user = users[userId];
+  const shortURL = req.params.id;
+  const longURL = urlDatabase[shortURL];
+
+  if (!user) {
+    res.send("Error: You must be logged in to update URLs.");
+  } else if (!longURL) {
+    res.send("Error: The URL for the given ID does not exist.");
+  } else if (longURL.userId !== userId) {
+    res.send("Error: You do not own the URL with the given ID.");
+  } else {
+    longURL.url = req.body.newLongURL; // Update the long URL
+    res.redirect("/urls");
+  }
+});
+
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id; // Extract the shortURL from the request parameters
   const longURL = urlDatabase[shortURL]; // Look up the longURL in the urlDatabase
@@ -119,9 +137,21 @@ app.get("/u/:id", (req, res) => {
 });
 
 app.post("/urls/:id/delete", (req, res) => {
-  const shortURL = req.params.id; // Extract the shortURL from the request parameters
-  delete urlDatabase[shortURL]; // Use the delete operator to remove the URL from urlDatabase
-  res.redirect("/urls");
+  const userId = req.cookies["user_id"];
+  const user = users[userId];
+  const shortURL = req.params.id;
+  const longURL = urlDatabase[shortURL];
+
+  if (!user) {
+    res.send("Error: You must be logged in to delete URLs.");
+  } else if (!longURL) {
+    res.send("Error: The URL for the given ID does not exist.");
+  } else if (longURL.userId !== userId) {
+    res.send("Error: You do not own the URL with the given ID.");
+  } else {
+    delete urlDatabase[shortURL]; // Delete the URL from urlDatabase
+    res.redirect("/urls");
+  }
 });
 
 app.post("/urls/:id/update", (req, res) => {
