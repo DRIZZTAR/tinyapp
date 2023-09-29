@@ -1,32 +1,65 @@
 const express = require("express");
-const app = express();
-const PORT = 8080; // default port 8080
 const cookieParser = require("cookie-parser");
+const app = express();
+const PORT = 8080;
 
+// Middleware
 app.set("view engine", "ejs");
-app.use(cookieParser()); // Use cookie-parser middleware
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
 
+// In-memory database for URLs
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
 
-app.use(express.urlencoded({ extended: true }));
-
+// In-memory database for users
 const users = {};
 
+// Helper function to generate random strings
+const generateRandomString = function () {
+  let result = "";
+  const characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const charactersLength = characters.length;
+  for (let i = 0; i < 6; i++) {
+    result += characters.charAt(Math.floor(Math.random() * charactersLength));
+  }
+  return result;
+};
+
+// Helper function to find a user by email
+const getUserByEmail = function (email, users) {
+  for (const userId in users) {
+    const user = users[userId];
+    if (user.email === email) {
+      return user;
+    }
+  }
+  return null;
+};
+
+// Routes
+
+// Root route
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  // Check if the user is logged in by looking for the user_id cookie
+  const userId = req.cookies["user_id"];
+  
+  if (userId) {
+    res.redirect("/urls");
+  } else {
+    res.redirect("/login");
+  }
 });
 
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
+// JSON route
 app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
+// URL index route
 app.get("/urls", (req, res) => {
   const templateVars = {
     urls: urlDatabase,
@@ -35,6 +68,7 @@ app.get("/urls", (req, res) => {
   res.render("urls_index", templateVars);
 });
 
+// URL creation route
 app.post("/urls", (req, res) => {
   const longURL = req.body.longURL; // Get the longURL from the form data
   const shortURL = generateRandomString();
@@ -44,12 +78,14 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
+// URL new route
 app.get("/urls/new", (req, res) => {
   const templateVars = {
     user: users[req.cookies["user_id"]]
   };
   res.render("urls_new", templateVars);
 });
+
 
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
@@ -85,43 +121,14 @@ app.post("/urls/:id/update", (req, res) => {
   res.redirect(`/urls/${shortURL}`); // Redirect to the URL show page for the updated URL
 });
 
-// POST /login endpoint
-app.post("/login", (req, res) => {
-  const { email, password } = req.body;
-
-  // Check if the email exists in the users object
-  const user = getUserByEmail(email, users);
-
-  // If the user doesn't exist or the password is incorrect, return a 403 error
-  if (!user || user.password !== password) {
-    res.status(403).send("Invalid email or password");
-    return;
-  }
-
-  // If the email and password are correct, set the user_id cookie and redirect to /urls
-  res.cookie("user_id", user.id);
-  res.redirect("/urls");
-});
-
-// Display the login form
-app.get("/login", (req, res) => {
-  res.render("login");
-});
-
-// Logout endpoint
-app.post("/logout", (req, res) => {
-  const userId = req.cookies["user_id"]; // Clear the user_id cookie
-  delete users[userId];
-  res.clearCookie("user_id"); // Clear the user_id cookie
-  res.redirect("/login");
-});
 
 
-// GET /register endpoint
+// Registration form
 app.get("/register", (req, res) => {
   res.render("registration");
 });
 
+// Handle registration form submission
 app.post("/register", (req, res) => {
   const userId = generateRandomString();
   const { email, password } = req.body;
@@ -131,46 +138,47 @@ app.post("/register", (req, res) => {
     return;
   }
 
-  // Use the helper function to check for an existing email
-  const existingUser = getUserByEmail(email, users);
-  if (existingUser) {
+  if (getUserByEmail(email, users)) {
     res.status(400).send("Email is already registered.");
     return;
   }
 
-  // Create a new user object and add it to the users object
   users[userId] = {
     id: userId,
     email: email,
     password: password,
   };
 
-  // Set a user_id cookie containing the user's ID
   res.cookie("user_id", userId);
-
-  // Redirect the user to the /urls page
   res.redirect("/urls");
 });
 
+// Login form
+app.get("/login", (req, res) => {
+  res.render("login");
+});
+
+// Handle login form submission
+app.post("/login", (req, res) => {
+  const { email, password } = req.body;
+  const user = getUserByEmail(email, users);
+
+  if (!user || user.password !== password) {
+    res.status(403).send("Invalid email or password");
+    return;
+  }
+
+  res.cookie("user_id", user.id);
+  res.redirect("/urls");
+});
+
+// Logout
+app.post("/logout", (req, res) => {
+  res.clearCookie("user_id");
+  res.redirect("/login");
+});
+
+// Start the server
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
-const generateRandomString = function() {
-  let result = '';
-  const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  const charactersLength = characters.length;
-  for (let i = 0; i < 6; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-};
-
-const getUserByEmail = function(email, users) {
-  for (const userId in users) {
-    if (users[userId].email === email) {
-      return users[userId];
-    }
-  }
-  return null; // Return null if the email is not found
-};
