@@ -198,9 +198,14 @@ app.post("/registration", (req, res) => {
 // Login form
 app.get("/login", (req, res) => {
   const userId = req.cookies["user_id"];
-  const user = getUserByEmail(userId, users);
-  res.render("login", { user });
+  const user = users[userId];
+  if (user) {
+    res.redirect("/urls");
+  } else {
+    res.render("login", { user });
+  }
 });
+
 
 // Handle login form submission
 app.post("/login", (req, res) => {
