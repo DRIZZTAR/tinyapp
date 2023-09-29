@@ -113,7 +113,7 @@ app.post("/logout", (req, res) => {
   const userId = req.cookies["user_id"]; // Clear the user_id cookie
   delete users[userId];
   res.clearCookie("user_id"); // Clear the user_id cookie
-  res.redirect("/urls"); // Redirect the user back to the /urls page (for now)
+  res.redirect("/login");
 });
 
 
