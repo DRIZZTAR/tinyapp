@@ -162,12 +162,16 @@ app.post("/urls/:id/update", (req, res) => {
 });
 
 // Registration form
-// Registration form
 app.get("/registration", (req, res) => {
   const userId = req.cookies["user_id"];
-  const user = getUserByEmail(userId, users);
-  res.render("registration", { user });
+  const user = users[userId];
+  if (user) {
+    res.redirect("/urls");
+  } else {
+    res.render("registration", { user });
+  }
 });
+
 
 
 // Handle registration form submission
