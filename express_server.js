@@ -24,10 +24,19 @@ const urlDatabase = {
   }
 };
 
-
 // In-memory database for users
 const users = {};
 
+// Function to filter URLs for a specific user
+const urlsForUser = function(id) {
+  const userURLs = {};
+  for (const shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID === id) {
+      userURLs[shortURL] = urlDatabase[shortURL];
+    }
+  }
+  return userURLs;
+};
 
 // Routes
 
@@ -48,14 +57,15 @@ app.get("/urls.json", (req, res) => {
   res.json(urlDatabase);
 });
 
-// URL index route - If user is logged in, render urls_index page. Else, send error message.
+// URL index route - If user is logged in, render urls_index page with URLs created by the user. Else, send error message.
 app.get("/urls", (req, res) => {
   const userId = req.session.user_id;
   const user = users[userId];
   // Check if the user is logged in
   if (user) {
+    const userURLs = urlsForUser(userId);
     const templateVars = {
-      urls: urlDatabase,
+      urls: userURLs,
       user: user
     };
     res.render("urls_index", templateVars);
@@ -82,7 +92,6 @@ app.post("/urls", (req, res) => {
     res.redirect(`/urls/${shortURL}`);
   }
 });
-
 
 // URL new route - If user is logged in, render urls_new page. Else, redirect to login.
 app.get("/urls/new", (req, res) => {
@@ -147,7 +156,6 @@ app.get("/u/:id", (req, res) => {
   }
 });
 
-
 // URL delete route - If user is logged in and owns the URL, delete the URL and redirect to /urls. Else, send error message.
 app.post("/urls/:id/delete", (req, res) => {
   const userId = req.session.user_id;
@@ -206,7 +214,6 @@ app.post("/registration", (req, res) => {
   res.redirect("/urls");
 });
 
-
 // Login route - If user is logged in, redirect to /urls. Else, render login page.
 app.get("/login", (req, res) => {
   const userId = req.session.user_id;
@@ -232,14 +239,11 @@ app.post("/login", (req, res) => {
   res.redirect("/urls");
 });
 
-
-// Logout post - Clear cookie and redirect to login.
 // Logout post - Clear the session cookie and redirect to login.
 app.post("/logout", (req, res) => {
   req.session = null; // Clear the session data
   res.redirect("/login");
 });
-
 
 // Start the server
 app.listen(PORT, () => {

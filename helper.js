@@ -21,32 +21,7 @@ const generateRandomString = function() {
   return result;
 };
 
-// Helper function to return urls for logged on user
-const urlsForUser = function(id, loggedInUserId) {
-  let userUrls = {};
-  for (let url in urlDatabase) {
-    const urlInfo = urlDatabase[url];
-    if (urlInfo.userID === id && loggedInUserId === id) {
-      userUrls[url] = urlInfo;
-    }
-  }
-  return userUrls;
-};
-
-const urlDatabase = {
-  "b2xVn2": {
-    longURL: "http://www.lighthouselabs.ca",
-    userID: "userRandomID"
-  },
-  "9sm5xK": {
-    longURL: "http://www.google.com",
-    userID: "user2RandomID"
-  }
-};
-
 module.exports = {
   getUserByEmail,
   generateRandomString,
-  urlsForUser,
-  urlDatabase
 };
