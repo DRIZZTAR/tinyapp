@@ -1,6 +1,7 @@
 const express = require("express");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
+const { getUserByEmail, generateRandomString, urlsForUser } = require("./helper");
 const app = express();
 const PORT = 8080;
 
@@ -9,6 +10,7 @@ app.use(cookieSession({
   name: 'session',
   keys: ['key1', 'key2']
 }));
+
 app.use(express.urlencoded({ extended: true }));
 
 const urlDatabase = {
@@ -25,40 +27,6 @@ const urlDatabase = {
 
 // In-memory database for users
 const users = {};
-
-// Helper function to generate random strings
-const generateRandomString = function() {
-  let result = "";
-  const characters =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-  const charactersLength = characters.length;
-  for (let i = 0; i < 6; i++) {
-    result += characters.charAt(Math.floor(Math.random() * charactersLength));
-  }
-  return result;
-};
-
-// Helper function to find a user by email
-const getUserByEmail = function(email, users) {
-  for (const userId in users) {
-    const user = users[userId];
-    if (user.email === email) {
-      return user;
-    }
-  }
-  return null;
-};
-
-// Helper function to return urls for logged on user
-const urlsForUser = function(id) {
-  let userUrls = {};
-  for (let url in urlDatabase) {
-    if (urlDatabase[url].userID === id) {
-      userUrls[url] = urlDatabase[url];
-    }
-  }
-  return userUrls;
-};
 
 
 // Routes
@@ -250,7 +218,7 @@ app.get("/login", (req, res) => {
   }
 });
 
-// Login post - If email or password are invalid, send error message. Else, set cookie and redirect to /urls.
+// Login post - If email or password are invalid, send error message. Else, set the session and redirect to /urls.
 app.post("/login", (req, res) => {
   const { email, password } = req.body;
   const user = getUserByEmail(email, users);
@@ -260,15 +228,18 @@ app.post("/login", (req, res) => {
     return;
   }
 
-  res.cookie("user_id", user.id);
+  req.session.user_id = user.id; // Set the session variable
   res.redirect("/urls");
 });
 
+
 // Logout post - Clear cookie and redirect to login.
+// Logout post - Clear the session cookie and redirect to login.
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session = null; // Clear the session data
   res.redirect("/login");
 });
+
 
 // Start the server
 app.listen(PORT, () => {
