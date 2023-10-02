@@ -70,7 +70,7 @@ app.get("/urls", (req, res) => {
     };
     res.render("urls_index", templateVars);
   } else {
-    // If the user is not logged in, send an error message
+    // Send an error message when a user attempts to access /urls without being logged in
     res.send("Error: You must be logged in to view this page.");
   }
 });
@@ -245,7 +245,7 @@ app.post("/logout", (req, res) => {
   res.redirect("/login");
 });
 
-// Start the server
+// Start the Express server on the specified port and log the listening status
 app.listen(PORT, () => {
-  console.log(`Example app listening on port ${PORT}!`);
+  console.log(`Express server is now listening on port ${PORT}`);
 });
