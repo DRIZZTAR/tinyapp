@@ -76,12 +76,19 @@ app.get("/urls", (req, res) => {
 
 // URL creation route - Generate short URL, save it to urlDatabase, and redirect to /urls/:shortURL
 app.post("/urls", (req, res) => {
-  const longURL = req.body.longURL; // Get the longURL from the form data
-  const shortURL = generateRandomString();
-  urlDatabase[shortURL] = longURL; // Save the id-longURL pair to urlDatabase
+  const userId = req.cookies["user_id"];
+  const user = users[userId];
+  // Check if the user is logged in
+  if (!user) {
+    res.status(401).send("Error: You must be logged in to shorten URLs.");
+  } else {
+    const longURL = req.body.longURL; // Get the longURL from the form data
+    const shortURL = generateRandomString();
+    urlDatabase[shortURL] = longURL; // Save the id-longURL pair to urlDatabase
 
-  console.log(`Long URL: ${longURL}, Short URL: ${shortURL}`);
-  res.redirect(`/urls/${shortURL}`);
+    console.log(`Long URL: ${longURL}, Short URL: ${shortURL}`);
+    res.redirect(`/urls/${shortURL}`);
+  }
 });
 
 // URL new route - If user is logged in, render urls_new page. Else, redirect to login.
@@ -91,7 +98,7 @@ app.get("/urls/new", (req, res) => {
   if (user) {
     res.render("urls_new", { user });
   } else {
-    res.redirect("/login");
+    res.redirect("/login"); // Redirect to the login page if not logged in
   }
 });
 
@@ -133,7 +140,7 @@ app.get("/u/:id", (req, res) => {
   if (longURL) {
     res.redirect(longURL); // Redirect to the longURL
   } else {
-    res.status(404).send("URL not found"); // Handle the case where the shortURL doesn't exist
+    res.status(404).send('<html><body><h1>URL not found</h1></body></html>'); // Send a relevant HTML error message
   }
 });
 
