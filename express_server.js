@@ -8,9 +8,16 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": {
+    longURL: "http://www.lighthouselabs.ca",
+    userID: "userRandomID"
+  },
+  "9sm5xK": {
+    longURL: "http://www.google.com",
+    userID: "user2RandomID"
+  }
 };
+
 
 // In-memory database for users
 const users = {};
@@ -78,18 +85,20 @@ app.get("/urls", (req, res) => {
 app.post("/urls", (req, res) => {
   const userId = req.cookies["user_id"];
   const user = users[userId];
-  // Check if the user is logged in
   if (!user) {
     res.status(401).send("Error: You must be logged in to shorten URLs.");
   } else {
-    const longURL = req.body.longURL; // Get the longURL from the form data
+    const longURL = req.body.longURL;
     const shortURL = generateRandomString();
-    urlDatabase[shortURL] = longURL; // Save the id-longURL pair to urlDatabase
-
+    urlDatabase[shortURL] = {
+      longURL: longURL,
+      userID: userId
+    };
     console.log(`Long URL: ${longURL}, Short URL: ${shortURL}`);
     res.redirect(`/urls/${shortURL}`);
   }
 });
+
 
 // URL new route - If user is logged in, render urls_new page. Else, redirect to login.
 app.get("/urls/new", (req, res) => {
@@ -106,7 +115,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:id", (req, res) => {
   const templateVars = {
     id: req.params.id,
-    longURL: urlDatabase[req.params.id],
+    longURL: urlDatabase[req.params.id].longURL,
     user: users[req.cookies["user_id"]]
   };
   res.render("urls_show", templateVars);
@@ -117,48 +126,48 @@ app.post("/urls/:id", (req, res) => {
   const userId = req.cookies["user_id"];
   const user = users[userId];
   const shortURL = req.params.id;
-  const longURL = urlDatabase[shortURL];
+  const url = urlDatabase[shortURL];
 
   if (!user) {
     res.send("Error: You must be logged in to update URLs.");
-  } else if (!longURL) {
+  } else if (!url) {
     res.send("Error: The URL for the given ID does not exist.");
-  } else if (longURL.userId !== userId) {
+  } else if (url.userID !== userId) {
     res.send("Error: You do not own the URL with the given ID.");
   } else {
-    longURL.url = req.body.newLongURL; // Update the long URL
+    url.longURL = req.body.newLongURL;
     res.redirect("/urls");
   }
 });
 
 // URL redirect route - If long URL exists, redirect to long URL. Else, send error message.
 app.get("/u/:id", (req, res) => {
-  const shortURL = req.params.id; // Extract the shortURL from the request parameters
-  const longURL = urlDatabase[shortURL]; // Look up the longURL in the urlDatabase
+  const shortURL = req.params.id;
+  const url = urlDatabase[shortURL];
 
-  // Check if the longURL exists in the database
-  if (longURL) {
-    res.redirect(longURL); // Redirect to the longURL
+  if (url) {
+    res.redirect(url.longURL);
   } else {
-    res.status(404).send('<html><body><h1>URL not found</h1></body></html>'); // Send HTML error message
+    res.status(404).send('<html><body><h1>URL not found</h1></body></html>');
   }
 });
+
 
 // URL delete route - If user is logged in and owns the URL, delete the URL and redirect to /urls. Else, send error message.
 app.post("/urls/:id/delete", (req, res) => {
   const userId = req.cookies["user_id"];
   const user = users[userId];
   const shortURL = req.params.id;
-  const longURL = urlDatabase[shortURL];
+  const url = urlDatabase[shortURL];
 
   if (!user) {
     res.send("Error: You must be logged in to delete URLs.");
-  } else if (!longURL) {
+  } else if (!url) {
     res.send("Error: The URL for the given ID does not exist.");
-  } else if (longURL.userId !== userId) {
+  } else if (url.userID !== userId) {
     res.send("Error: You do not own the URL with the given ID.");
   } else {
-    delete urlDatabase[shortURL]; // Delete the URL from urlDatabase
+    delete urlDatabase[shortURL];
     res.redirect("/urls");
   }
 });
