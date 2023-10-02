@@ -4,9 +4,17 @@
 
 ## Preview
 
-![GitHub Logo]("C:\Users\tyson\OneDrive\Pictures\tinyapp\login.jpeg") <!-- Login screen-->
-![Screenshot 2](#) <!-- Home page with urls created by user -->
-![Screenshot 3](#) <!-- Edit page to modify urls -->
+![Login Screen](images/login.jpeg)
+![Home](images/home.jpeg)
+![Edit links](images/editScreen.jpeg)
+
+## Features
+
+- Shorten long URLs to make them more manageable.
+- View a list of URLs created by the user.
+- Edit and update existing URLs.
+- Secure user authentication and password hashing.
+- Session-based user management.
 
 ## Technology Stack
 
@@ -35,5 +43,3 @@ To set up and run TinyApp on your local machine, follow these simple steps:
    Your TinyApp will be accessible at `http://localhost:8080/`.
 
 That's it! You're all set to explore and use TinyApp. Enjoy shortening those URLs!
-
-Feel free to customize this README further with any additional information or sections you think would be beneficial.
