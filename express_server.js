@@ -1,11 +1,14 @@
 const express = require("express");
-const cookieParser = require("cookie-parser");
+const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080;
 
 app.set("view engine", "ejs");
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ['key1', 'key2']
+}));
 app.use(express.urlencoded({ extended: true }));
 
 const urlDatabase = {
@@ -62,7 +65,7 @@ const urlsForUser = function(id) {
 
 // Root route - Redirects to login if not logged in, else redirects to /urls
 app.get("/", (req, res) => {
-  const userId = req.cookies["user_id"];
+  const userId = req.session.user_id;
   const user = getUserByEmail(userId, users);
   // Check if the user is logged in
   if (user) {
@@ -79,7 +82,7 @@ app.get("/urls.json", (req, res) => {
 
 // URL index route - If user is logged in, render urls_index page. Else, send error message.
 app.get("/urls", (req, res) => {
-  const userId = req.cookies["user_id"];
+  const userId = req.session.user_id;
   const user = users[userId];
   // Check if the user is logged in
   if (user) {
@@ -96,7 +99,7 @@ app.get("/urls", (req, res) => {
 
 // URL creation route - Generate short URL, save it to urlDatabase, and redirect to /urls/:shortURL
 app.post("/urls", (req, res) => {
-  const userId = req.cookies["user_id"];
+  const userId = req.session.user_id;
   const user = users[userId];
   if (!user) {
     res.status(401).send("Error: You must be logged in to shorten URLs.");
@@ -115,7 +118,7 @@ app.post("/urls", (req, res) => {
 
 // URL new route - If user is logged in, render urls_new page. Else, redirect to login.
 app.get("/urls/new", (req, res) => {
-  const userId = req.cookies["user_id"];
+  const userId = req.session.user_id;
   const user = users[userId];
   if (user) {
     res.render("urls_new", { user });
@@ -126,7 +129,7 @@ app.get("/urls/new", (req, res) => {
 
 // URL show route - Render urls_show page with short URL, corresponding long URL, and user data
 app.get("/urls/:id", (req, res) => {
-  const userId = req.cookies["user_id"];
+  const userId = req.session.user_id;
   const user = users[userId];
   if (!user) {
     res.send("Error: You must be logged in to view this page.");
@@ -147,7 +150,7 @@ app.get("/urls/:id", (req, res) => {
 
 // URL update route - If user is logged in and owns the URL, update the URL and redirect to /urls. Else, send error message.
 app.post("/urls/:id", (req, res) => {
-  const userId = req.cookies["user_id"];
+  const userId = req.session.user_id;
   const user = users[userId];
   const shortURL = req.params.id;
   const url = urlDatabase[shortURL];
@@ -179,7 +182,7 @@ app.get("/u/:id", (req, res) => {
 
 // URL delete route - If user is logged in and owns the URL, delete the URL and redirect to /urls. Else, send error message.
 app.post("/urls/:id/delete", (req, res) => {
-  const userId = req.cookies["user_id"];
+  const userId = req.session.user_id;
   const user = users[userId];
   const shortURL = req.params.id;
   const url = urlDatabase[shortURL];
@@ -198,7 +201,7 @@ app.post("/urls/:id/delete", (req, res) => {
 
 // Registration route form - If user is logged in, redirect to /urls. Else, render registration page.
 app.get("/registration", (req, res) => {
-  const userId = req.cookies["user_id"];
+  const userId = req.session.user_id;
   const user = users[userId];
   if (user) {
     res.redirect("/urls");
@@ -229,13 +232,16 @@ app.post("/registration", (req, res) => {
     email: email,
     password: hashedPassword, // Save the hashed password
   };
-  res.cookie("user_id", userId);
+
+  // Set the user_id session variable and then redirect to /urls
+  req.session.user_id = userId;
   res.redirect("/urls");
 });
 
+
 // Login route - If user is logged in, redirect to /urls. Else, render login page.
 app.get("/login", (req, res) => {
-  const userId = req.cookies["user_id"];
+  const userId = req.session.user_id;
   const user = users[userId];
   if (user) {
     res.redirect("/urls");
