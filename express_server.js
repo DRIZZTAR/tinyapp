@@ -45,6 +45,18 @@ const getUserByEmail = function(email, users) {
   return null;
 };
 
+// Helper function to return urls for logged on user
+const urlsForUser = function(id) {
+  let userUrls = {};
+  for (let url in urlDatabase) {
+    if (urlDatabase[url].userID === id) {
+      userUrls[url] = urlDatabase[url];
+    }
+  }
+  return userUrls;
+};
+
+
 // Routes
 
 // Root route - Redirects to login if not logged in, else redirects to /urls
@@ -113,10 +125,21 @@ app.get("/urls/new", (req, res) => {
 
 // URL show route - Render urls_show page with short URL, corresponding long URL, and user data
 app.get("/urls/:id", (req, res) => {
+  const userId = req.cookies["user_id"];
+  const user = users[userId];
+  if (!user) {
+    res.send("Error: You must be logged in to view this page.");
+    return;
+  }
+  const url = urlDatabase[req.params.id];
+  if (url.userID !== userId) {
+    res.send("Error: You do not own this URL.");
+    return;
+  }
   const templateVars = {
     id: req.params.id,
-    longURL: urlDatabase[req.params.id].longURL,
-    user: users[req.cookies["user_id"]]
+    longURL: url.longURL,
+    user: user
   };
   res.render("urls_show", templateVars);
 });
