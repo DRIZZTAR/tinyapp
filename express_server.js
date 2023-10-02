@@ -229,7 +229,6 @@ app.post("/registration", (req, res) => {
     email: email,
     password: hashedPassword, // Save the hashed password
   };
-  console.log(users);  // Print out the users object
   res.cookie("user_id", userId);
   res.redirect("/urls");
 });
