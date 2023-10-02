@@ -21,19 +21,18 @@ const generateRandomString = function() {
   return result;
 };
 
-// Helper function to return urls for logged on user
-const urlsForUser = function(id) {
-  let userUrls = {};
-  for (let url in urlDatabase) {
-    if (urlDatabase[url].userID === id) {
-      userUrls[url] = urlDatabase[url];
-    }
-  }
-  return userUrls;
-};
+// Helper function to return urls for logged on user, commented out as it is not used
+// const urlsForUser = function(id) {
+//   let userUrls = {};
+//   for (let url in urlDatabase) {
+//     if (urlDatabase[url].userID === id) {
+//       userUrls[url] = urlDatabase[url];
+//     }
+//   }
+//   return userUrls;
+// };
 
 module.exports = {
   getUserByEmail,
   generateRandomString,
-  urlsForUser
 };
