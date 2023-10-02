@@ -169,7 +169,6 @@ app.get("/registration", (req, res) => {
 
 // Registration post - If email or password are empty or email already exists, send error message. Else, create new user, set cookie, and redirect to /urls.
 app.post("/registration", (req, res) => {
-  const userId = generateRandomString();
   const { email, password } = req.body;
 
   if (!email || !password) {
@@ -182,6 +181,8 @@ app.post("/registration", (req, res) => {
     return;
   }
 
+  const userId = generateRandomString();
+
   users[userId] = {
     id: userId,
     email: email,
@@ -191,6 +192,7 @@ app.post("/registration", (req, res) => {
   res.cookie("user_id", userId);
   res.redirect("/urls");
 });
+
 
 // Login route - If user is logged in, redirect to /urls. Else, render login page.
 app.get("/login", (req, res) => {
