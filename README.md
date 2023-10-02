@@ -4,7 +4,7 @@
 
 ## Preview
 
-![Screenshot 1](#) <!-- Login screen-->
+![GitHub Logo]("C:\Users\tyson\OneDrive\Pictures\tinyapp\login.jpeg") <!-- Login screen-->
 ![Screenshot 2](#) <!-- Home page with urls created by user -->
 ![Screenshot 3](#) <!-- Edit page to modify urls -->
 
