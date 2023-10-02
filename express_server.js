@@ -1,5 +1,6 @@
 const express = require("express");
 const cookieParser = require("cookie-parser");
+const bcrypt = require("bcryptjs");
 const app = express();
 const PORT = 8080;
 
@@ -163,7 +164,6 @@ app.post("/urls/:id", (req, res) => {
   }
 });
 
-
 // URL redirect route - If long URL exists, redirect to long URL. Else, send error message.
 app.get("/u/:id", (req, res) => {
   const shortURL = req.params.id;
@@ -222,17 +222,17 @@ app.post("/registration", (req, res) => {
   }
 
   const userId = generateRandomString();
+  const hashedPassword = bcrypt.hashSync(password, 10); // Hash the password
 
   users[userId] = {
     id: userId,
     email: email,
-    password: password,
+    password: hashedPassword, // Save the hashed password
   };
-
+  console.log(users);  // Print out the users object
   res.cookie("user_id", userId);
   res.redirect("/urls");
 });
-
 
 // Login route - If user is logged in, redirect to /urls. Else, render login page.
 app.get("/login", (req, res) => {
@@ -250,7 +250,7 @@ app.post("/login", (req, res) => {
   const { email, password } = req.body;
   const user = getUserByEmail(email, users);
 
-  if (!user || user.password !== password) {
+  if (!user || !bcrypt.compareSync(password, user.password)) {
     res.status(403).send("Invalid email or password");
     return;
   }
