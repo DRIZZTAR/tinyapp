@@ -140,7 +140,7 @@ app.get("/u/:id", (req, res) => {
   if (longURL) {
     res.redirect(longURL); // Redirect to the longURL
   } else {
-    res.status(404).send('<html><body><h1>URL not found</h1></body></html>'); // Send a relevant HTML error message
+    res.status(404).send('<html><body><h1>URL not found</h1></body></html>'); // Send HTML error message
   }
 });
 
